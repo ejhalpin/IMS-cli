@@ -1,0 +1,27 @@
+{
+  "name": "PMS-cli",
+  "version": "1.0.0",
+  "description": "A three-facing product management system for buyers, managers, and supervisors packed into a powerful node cli",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ejhalpin/PMS-cli.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ejhalpin/PMS-cli/issues"
+  },
+  "homepage": "https://github.com/ejhalpin/PMS-cli#readme",
+  "dependencies": {
+    "dotenv": "^8.0.0",
+    "encrypter": "^1.0.0",
+    "inquirer": "^6.5.0",
+    "moment": "^2.24.0",
+    "mysql": "^2.17.1"
+  }
+}
