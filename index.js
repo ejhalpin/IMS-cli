@@ -1,10 +1,12 @@
 var auth = require("./auth.js");
 var inquirer = require("inquirer");
 var moment = require("moment");
+var customer = require("./customer.js");
 
 auth.connection.connect(function(err) {
   if (err) throw err;
 });
+
 //the welcome function prompts the user to log in or sign up
 function welcome() {
   inquirer
@@ -160,7 +162,25 @@ function signup() {
 
 function shop() {
   //customer level actions
-  console.log("shopping...");
+  //print the product list
+  customer.getItems({}, "id").then(data => {
+    console.log("-------------------------PRODUCTS-------------------------");
+    data.forEach(entry => {
+      var itemString = `ID: ${entry.id}, NAME: ${entry.name}, DEPARTMENT: ${entry.department}, PRICE: ${entry.price}, QUANTITY: ${entry.stock}`;
+      console.log(itemString);
+      console.log("----------------------------------------------------------");
+    });
+  });
+  // inquirer
+  //   .prompt({
+  //     type: "select",
+  //     message: "Welcome to the store. What would you like to do?",
+  //     choices: ["filter products", "make a purchase", "quit"],
+  //     name: "choice"
+  //   })
+  //   .then(res => {
+  //     //carry out the action
+  //   });
   auth.connection.end();
 }
 function manage() {
