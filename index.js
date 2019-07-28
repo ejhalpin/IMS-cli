@@ -63,7 +63,7 @@ function login() {
                 function(err) {
                   if (err) throw err;
                   console.log("user profile updated");
-
+                  auth.currentUser = res.username;
                   //call the next function according to permission level
                 }
               );
@@ -83,7 +83,7 @@ function login() {
               console.log("**\tinvalid password\t**");
               inquirer
                 .prompt({
-                  type: "select",
+                  type: "list",
                   message: "",
                   choices: ["try again", "go back", "quit"],
                   name: "choice"
@@ -147,7 +147,7 @@ function signup() {
 
                 auth.connection.query("INSERT INTO users SET ?", userObject, err => {
                   if (err) throw err;
-
+                  auth.currentUser = username;
                   shop();
                 });
               });
@@ -160,29 +160,77 @@ function signup() {
     });
 }
 
+function logout() {
+  auth.connection.query("UPDATE users SET ? WHERE ?", [{ login: false }, { name: auth.currentUser }], err => {
+    if (err) throw err;
+    console.log("you have been looged out. Goodbye.");
+    auth.connection.end();
+    customer.connection.end();
+  });
+}
+
 function shop() {
   //customer level actions
   //print the product list
-  customer.getItems({}, "id").then(data => {
+  customer.getItems({}, "").then(data => {
     console.log("-------------------------PRODUCTS-------------------------");
     data.forEach(entry => {
       var itemString = `ID: ${entry.id}, NAME: ${entry.name}, DEPARTMENT: ${entry.department}, PRICE: ${entry.price}, QUANTITY: ${entry.stock}`;
       console.log(itemString);
       console.log("----------------------------------------------------------");
     });
+    inquirer
+      .prompt({
+        type: "list",
+        message: "Welcome to the store. What would you like to do?",
+        choices: ["make a purchase", "quit"],
+        name: "choice"
+      })
+      .then(res => {
+        switch (res.choice) {
+          case "make a purchase":
+            buy();
+            break;
+          case "quit":
+            console.log("Thanks for shopping with us.");
+            logout();
+        }
+      });
   });
-  // inquirer
-  //   .prompt({
-  //     type: "select",
-  //     message: "Welcome to the store. What would you like to do?",
-  //     choices: ["filter products", "make a purchase", "quit"],
-  //     name: "choice"
-  //   })
-  //   .then(res => {
-  //     //carry out the action
-  //   });
-  auth.connection.end();
 }
+
+function buy() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "Enter the product id number",
+        name: "id"
+        //add some validation
+      },
+      {
+        type: "input",
+        message: "Enter the quantity",
+        name: "quantity"
+        //add some validation
+      }
+    ])
+    .then(res => {
+      customer
+        .purchase(res.id, res.quantity)
+        .then(res => {
+          console.log(res[1]);
+          shop();
+        })
+        .catch(err => {
+          throw err;
+        });
+    })
+    .catch(err => {
+      throw err;
+    });
+}
+
 function manage() {
   //manager level actions
   console.log("managing...");
@@ -194,4 +242,5 @@ function supervise() {
   auth.connection.end();
 }
 
-welcome();
+shop();
+//welcome();

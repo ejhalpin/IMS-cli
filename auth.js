@@ -1,7 +1,7 @@
 var crypto = require("crypto");
 require("dotenv").config();
 var mysql = require("mysql");
-
+var currentUser = "";
 //getToken uses password based key derivation function 2 to generate a hex key from a user password. The salt, which is static for the
 //software, is protected two-fold through storage in .env and, if deployed, would be in a restricted directory inaccessible by endpoint.
 //The user, upon creating an account, will provide a passphrase which will be used to generate an auth token of 32 bytes. This token is
@@ -28,5 +28,6 @@ var connection = mysql.createConnection({
 
 module.exports = {
   getToken,
-  connection
+  connection,
+  currentUser
 };
