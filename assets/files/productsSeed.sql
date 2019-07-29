@@ -1,3 +1,4 @@
+drop database if exists pmsProducts_db;
 create database pmsProducts_db;
 
 use pmsProducts_db;
@@ -12,5 +13,27 @@ create table products
   (255),
   price double,
   stock int,
+  product_sales double,
+  sale BOOLEAN default FALSE,
+  primary key
+  (id)
 );
 
+
+
+  create table departments
+  (
+    name varchar(255) not null,
+    id int not null
+    auto_increment,
+    overhead double,
+    primary key
+    (id)
+);
+
+    insert into departments
+      (name,overhead)
+    values
+      ("Electronics", 12142.22),
+      ("Appliances", 10234.41),
+      ("Personal Protective Equipment", 8672.81);

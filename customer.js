@@ -1,6 +1,7 @@
 const mysql = require("mysql");
 require("dotenv").config();
-
+const auth = require("./auth.js");
+const inquirer = require("inquirer");
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
@@ -49,14 +50,15 @@ var getItems = function(searchObject, orderBy = "") {
 var purchase = function(item, quanitity) {
   return new Promise(resolve => {
     //determine the quantity of the product and compare it to the order
-    connection.query("SELECT stock FROM products WHERE id = ?", item, (err, data) => {
+    connection.query("SELECT stock, product_sales, price FROM products WHERE id = ?", item, (err, data) => {
       if (err) throw err;
       var remain = parseInt(data[0].stock) - quanitity;
+      var sale = parseFloat(data[0].product_sales) + parseFloat(data[0].price) * quanitity;
       if (remain < 0) {
         //there is not sufficient stock to fulfill the order.
         resolve([false, "insufficient quantity"]);
       } else {
-        connection.query("UPDATE products SET ? WHERE ?", [{ stock: remain }, { id: item }], err => {
+        connection.query("UPDATE products SET ? WHERE ?", [{ stock: remain, product_sales: sale }, { id: item }], err => {
           if (err) throw err;
           resolve([true, "transaction completed successfully"]);
         });
@@ -65,8 +67,66 @@ var purchase = function(item, quanitity) {
   });
 };
 
+function shop() {
+  //customer level actions
+  //print the product list
+  getItems({}, "").then(data => {
+    console.log("-------------------------PRODUCTS-------------------------");
+    data.forEach(entry => {
+      var itemString = `ID: ${entry.id}, NAME: ${entry.name}, DEPARTMENT: ${entry.department}, PRICE: ${entry.price}, QUANTITY: ${entry.stock}`;
+      console.log(itemString);
+      console.log("----------------------------------------------------------");
+    });
+    inquirer
+      .prompt({
+        type: "list",
+        message: "Welcome to the store. What would you like to do?",
+        choices: ["make a purchase", "quit"],
+        name: "choice"
+      })
+      .then(res => {
+        switch (res.choice) {
+          case "make a purchase":
+            buy();
+            break;
+          case "quit":
+            console.log("Thanks for shopping with us.");
+            auth.logout();
+        }
+      });
+  });
+}
+
+function buy() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "Enter the product id number",
+        name: "id"
+        //add some validation
+      },
+      {
+        type: "input",
+        message: "Enter the quantity",
+        name: "quantity"
+        //add some validation
+      }
+    ])
+    .then(res => {
+      purchase(res.id, res.quantity)
+        .then(res => {
+          console.log(res[1]);
+          shop();
+        })
+        .catch(err => {
+          throw err;
+        });
+    })
+    .catch(err => {
+      throw err;
+    });
+}
 module.exports = {
-  connection,
-  getItems,
-  purchase
+  shop
 };
