@@ -84,7 +84,7 @@ var login = function() {
               //update the user object
               connection.query(
                 "UPDATE users SET ? WHERE ?",
-                [{ lastlogin: moment().format(moment.HTML5_FMT.DATETIME_LOCAL_SECONDS), login: true, message: "login successful" }, { name: res.username }],
+                [{ lastlogin: moment().format(moment.HTML5_FMT.DATETIME_LOCAL_SECONDS), login: true }, { name: res.username }],
                 function(err) {
                   if (err) throw err;
                   currentUser = res.username;
@@ -168,7 +168,6 @@ var signup = function() {
                   joindate: moment().format(moment.HTML5_FMT.DATETIME_LOCAL_SECONDS),
                   lastlogin: moment().format(moment.HTML5_FMT.DATETIME_LOCAL_SECONDS),
                   login: true,
-                  message: "thank you for signing up",
                   permissions: 0
                 };
 
