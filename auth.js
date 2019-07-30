@@ -15,7 +15,7 @@ var connection = mysql.createConnection({
   port: 3306,
   user: uname,
   password: pword,
-  database: "pmsUsers_db"
+  database: "imsUsers_db"
 });
 
 connection.connect(function(err) {
@@ -39,22 +39,6 @@ var getToken = function(salt, passphrase) {
 
 //A function to return the name of all registerd users
 //specifying a permission level (String) will return only users with that level
-var getUsersByName = function(level) {
-  return new Promise(resolve => {
-    var queryString = "SELECT name FROM users";
-    if (level) {
-      queryString += " WHERE permissions = " + level;
-    }
-    connection.query(queryString, (err, data) => {
-      if (err) throw err;
-      var users = [];
-      data.forEach(entry => {
-        users.push(entry.name);
-      });
-      resolve(users);
-    });
-  });
-};
 
 //a private method for logging a user in
 var login = function() {
@@ -174,7 +158,7 @@ var signup = function() {
                 connection.query("INSERT INTO users SET ?", userObject, err => {
                   if (err) throw err;
                   currentUser = username;
-                  shop();
+                  customer.shop();
                 });
               });
             });
@@ -188,14 +172,13 @@ var signup = function() {
 
 //a function for logging a user out. This function is called when the
 //program is terminated by the user.
-var logout = function() {
+function logOut() {
   connection.query("UPDATE users SET ? WHERE ?", [{ login: false }, { name: currentUser }], err => {
     if (err) throw err;
     connection.end();
     console.log("you have been looged out. Goodbye.");
-    process.exit(0);
   });
-};
+}
 
 function welcome() {
   inquirer
@@ -219,8 +202,11 @@ function welcome() {
       }
     });
 }
+
+welcome();
+
 module.exports = {
   welcome,
-  logout,
-  getUsersByName
+  logOut,
+  connection
 };

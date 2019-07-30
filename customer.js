@@ -1,13 +1,13 @@
 const mysql = require("mysql");
 require("dotenv").config();
-const auth = require("./auth.js");
 const inquirer = require("inquirer");
+const cTable = require("console.table");
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: process.env.MYSQL_NAME,
   password: process.env.MYSQL_PASS,
-  database: "pmsProducts_db"
+  database: "imsProducts_db"
 });
 
 connection.connect(err => {
@@ -28,7 +28,6 @@ var getItems = function(searchObject, orderBy = "") {
     } else {
       querystring += "ORDER BY products.id";
     }
-    console.log(querystring);
     connection.query(querystring, searchObject, (err, data) => {
       if (err) throw err;
       //construct an array of objects to pre-format the data
@@ -70,13 +69,16 @@ var purchase = function(item, quanitity) {
 function shop() {
   //customer level actions
   //print the product list
+  var rows = [["Product ID", "Product Name", "Product Price"]];
   getItems({}, "").then(data => {
     console.log("-------------------------PRODUCTS-------------------------");
     data.forEach(entry => {
-      var itemString = `ID: ${entry.id}, NAME: ${entry.name}, DEPARTMENT: ${entry.department}, PRICE: ${entry.price}, QUANTITY: ${entry.stock}`;
-      console.log(itemString);
-      console.log("----------------------------------------------------------");
+      var arry = [entry.id, entry.name, "$" + entry.price];
+      rows.push(arry);
     });
+    console.log("Product Catalog");
+    console.log("---------------");
+    console.table(rows[0], rows.slice(1));
     inquirer
       .prompt({
         type: "list",
@@ -91,7 +93,8 @@ function shop() {
             break;
           case "quit":
             console.log("Thanks for shopping with us.");
-            auth.logout();
+            connection.end();
+            process.exit(0);
         }
       });
   });
@@ -127,6 +130,7 @@ function buy() {
       throw err;
     });
 }
+
 module.exports = {
   shop
 };

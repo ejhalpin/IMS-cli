@@ -1,13 +1,13 @@
 const mysql = require("mysql");
 require("dotenv").config();
-const auth = require("./auth.js");
 const inquirer = require("inquirer");
+const cTable = require("console.table");
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: process.env.MYSQL_NAME,
   password: process.env.MYSQL_PASS,
-  database: "pmsProducts_db"
+  database: "imsProducts_db"
 });
 
 connection.connect(err => {
@@ -22,12 +22,12 @@ var viewInventory = function(low = false) {
     }
     connection.query(queryString, (err, data) => {
       if (err) throw err;
-      console.log("-------------------------PRODUCTS-------------------------");
+      var rows = [["Product ID", "Product Name", "Product Departemnt", "Product Price", "Product Quantity"]];
+      console.log("-------------------------INVENTROY-------------------------");
       data.forEach(entry => {
-        var itemString = `ID: ${entry.id}, NAME: ${entry.name}, DEPARTMENT: ${entry.department}, PRICE: ${entry.price}, QUANTITY: ${entry.stock}`;
-        console.log(itemString);
-        console.log("----------------------------------------------------------");
+        rows.push([entry.id, entry.name, entry.department, "$" + entry.price, entry.stock]);
       });
+      console.table(rows[0], rows.slice(1));
       resolve();
     });
   });
@@ -133,7 +133,14 @@ function manage() {
                 }
               ])
               .then(answers => {
-                addProduct(answers).then(manage);
+                var productObject = {
+                  name: answers.name,
+                  department: answers.department,
+                  price: answers.price,
+                  stock: answers.stock,
+                  product_sales: 0
+                };
+                addProduct(productObject).then(manage);
               })
               .catch(err => {
                 throw err;
@@ -141,7 +148,8 @@ function manage() {
           });
           break;
         case "Quit":
-          auth.logout();
+          connection.end();
+          process.exit(0);
           break;
       }
     });

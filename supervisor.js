@@ -1,38 +1,70 @@
+//import npm packages
 const mysql = require("mysql");
 require("dotenv").config();
 const cTable = require("console.table");
 const inquirer = require("inquirer");
-const auth = require("./auth.js");
-
+//establish a connection to the products database
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: process.env.MYSQL_NAME,
   password: process.env.MYSQL_PASS,
-  database: "pmsProducts_db"
+  database: "imsProducts_db"
 });
-
+//establish a connection to the users database
+const authConnect = mysql.createConnection({
+  host: "localhost",
+  port: 3306,
+  user: process.env.MYSQL_NAME,
+  password: process.env.MYSQL_PASS,
+  database: "imsUsers_db"
+});
+//connect to each database
 connection.connect(err => {
   if (err) throw err;
 });
+authConnect.connect(err => {
+  if (err) throw err;
+});
+
+//a function to return user names in an array
+var getUsersByName = function(level) {
+  return new Promise(resolve => {
+    var queryString = "SELECT name FROM users";
+    if (level) {
+      queryString += " WHERE permissions = " + level;
+    }
+    authConnect.query(queryString, (err, data) => {
+      if (err) throw err;
+      var users = [];
+      data.forEach(entry => {
+        users.push(entry.name);
+      });
+      resolve(users);
+    });
+  });
+};
 
 var viewSales = function() {
   //get a list of department names
   connection.query("SELECT * FROM departments", (err, data) => {
     if (err) throw err;
-    connection.query("SELECT product_sales FROM products", (err, salesData) => {
+    //get the product sales and depatment values for every product
+    connection.query("SELECT product_sales, department FROM products", (err, salesData) => {
       if (err) throw err;
       var rows = [];
-      //rows.push("Department Sales");
       rows.push(["department_id", "department_name", "overhead", "product_sales", "total_profit"]);
+      //loop through the data
       for (var i = 0; i < data.length; i++) {
         var department = data[i].name;
         var total = 0;
         var temp = [];
+
         while (salesData.length > 0) {
           var object = salesData.shift();
           if (object.department === department) {
-            total += parseFloat(salesData.product_sales);
+            var psales = parseFloat(object.product_sales);
+            total = total + psales;
           } else {
             temp.push(object);
           }
@@ -45,7 +77,7 @@ var viewSales = function() {
         if (id < 10) {
           idString = "0" + id;
         } else idString = id.toString();
-        rows.push([idString, department, data[i].overhead, total, (total - parseFloat(data[i].overhead)).toFixed(2)]);
+        rows.push([idString, department, data[i].overhead, total.toFixed(2), (total - parseFloat(data[i].overhead)).toFixed(2)]);
       }
 
       console.log("\nDepartment Sales");
@@ -57,7 +89,7 @@ var viewSales = function() {
   });
 };
 
-var createDepartment = function(departmentObject) {
+var createDepartment = function() {
   inquirer
     .prompt([
       {
@@ -85,7 +117,7 @@ var createDepartment = function(departmentObject) {
 };
 
 var setUserPermissions = async function() {
-  var users = await auth.getUsersByName();
+  var users = await getUsersByName();
   inquirer
     .prompt([
       {
@@ -101,7 +133,7 @@ var setUserPermissions = async function() {
       }
     ])
     .then(res => {
-      auth.connection.query("UPDATE users SET ? WHERE ?", [{ permissions: res.permission }, { name: res.name }], err => {
+      authConnect.query("UPDATE users SET ? WHERE ?", [{ permissions: res.permission }, { name: res.user }], err => {
         if (err) throw err;
         console.log("user permissions updated successfully.");
         supervise();
@@ -115,7 +147,7 @@ var supervise = function() {
       type: "list",
       message: "what would you like to do?",
       choices: ["View Sales Data", "Create a New Department", "Set User Permissions", "Quit"],
-      name: choice
+      name: "choice"
     })
     .then(answer => {
       switch (answer.choice) {
@@ -129,7 +161,9 @@ var supervise = function() {
           setUserPermissions();
           break;
         case "Quit":
-          auth.logout();
+          connection.end();
+          authConnect.end();
+          process.exit(0);
           break;
       }
     })
@@ -137,6 +171,7 @@ var supervise = function() {
       if (err) throw err;
     });
 };
+
 module.exports = {
   supervise
 };

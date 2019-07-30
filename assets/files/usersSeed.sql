@@ -1,7 +1,7 @@
-drop database if exists pmsUsers_db;
-create database pmsUsers_db;
+drop database if exists imsUsers_db;
+create database imsUsers_db;
 
-use pmsUsers_db;
+use imsUsers_db;
 
 create table users
 (

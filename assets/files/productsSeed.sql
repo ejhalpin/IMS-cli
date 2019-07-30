@@ -1,7 +1,7 @@
-drop database if exists pmsProducts_db;
-create database pmsProducts_db;
+drop database if exists imsProducts_db;
+create database imsProducts_db;
 
-use pmsProducts_db;
+use imsProducts_db;
 
 create table products
 (
