@@ -66,3 +66,9 @@ The _supervisor.js_ file contains a collection of methods which manipulate data 
 The _IMS-cli_ uses a token-based authentication. When a user signs up for an account, they are asked for a user name and password. Both values are passed to a function which generates a hex token by leveraging the password based key derrivation function encryption algorithm that is packaged within the _node crypto_ module. Specifically, `pbkdf2` is utilized with a key length equivalent to `sha512`, an iteration count of 100000, a `salt` which is the user name, and the password that the user provided. The resulting string is then formatted to hex and stored in the token column of the user table.
 
 Because the token can never be predictably decripted, and for an additional layer of security, the user must log in with the (case sensative) user name that they initially provided along with the correct password. If either are incorrect, `pbkdf2` will return a hex token that will not match the user token stored in the database, causing the login to fail. Using this token-based authentication system also ensures that senstivie user data is never stored by the software.
+
+### Some Silly Videos
+
+1. [customer demo](./assets/videos/ims-customer.mp4)
+2. [manager demo](./assets/videos/ims-manager.mp4)
+3. [supervisor demo](./assets/videos/ims-supervisor.mp4)
