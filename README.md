@@ -67,7 +67,7 @@ The _IMS-cli_ uses a token-based authentication. When a user signs up for an acc
 
 Because the token can never be predictably decripted, and for an additional layer of security, the user must log in with the (case sensative) user name that they initially provided along with the correct password. If either are incorrect, `pbkdf2` will return a hex token that will not match the user token stored in the database, causing the login to fail. Using this token-based authentication system also ensures that senstivie user data is never stored by the software.
 
-### Some Silly Videos
+### Demo Videos
 
 1. [customer demo](./assets/videos/ims-customer.mp4)
 2. [manager demo](./assets/videos/ims-manager.mp4)
